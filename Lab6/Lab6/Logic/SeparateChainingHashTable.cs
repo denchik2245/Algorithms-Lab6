@@ -136,5 +136,51 @@ namespace Logic
 
             throw new KeyNotFoundException($"Key '{key}' not found.");
         }
+
+        /// Получить строковое представление всех элементов хэш-таблицы.
+        //public string Display()
+        //{
+        //    var sb = new StringBuilder();
+        //    int lineWidth = 120; // Максимальная длина строки
+
+        //    for (int i = 0; i < tableSize; i++)
+        //    {
+        //        int maxKeyLength = table[i].Any() ? table[i].Max(p => p.Key.ToString().Length) : 0;
+        //        int maxValueLength = table[i].Any() ? table[i].Max(p => p.Value.ToString().Length) : 0;
+
+        //        sb.Append(string.Format("Ячейка {0,3}: ", i));
+
+        //        if (table[i].Any())
+        //        {
+        //            int currentLineLength = sb.Length; // Текущая длина строки
+        //            foreach (var pair in table[i])
+        //            {
+        //                string item = string.Format("[{0,-" + maxKeyLength + "} | {1,-" + maxValueLength + "}]", pair.Key, pair.Value);
+        //                if (currentLineLength + item.Length + 2 > lineWidth) // +2 для ", "
+        //                {
+        //                    sb.AppendLine();
+        //                    sb.Append("          "); // Отступ для продолжения строки
+        //                    currentLineLength = 10; // Длина отступа
+        //                }
+        //                else if (currentLineLength > 10) // Добавляем запятую только если это не первый элемент в строке
+        //                {
+        //                    sb.Append(", ");
+        //                    currentLineLength += 2;
+        //                }
+
+        //                sb.Append(item);
+        //                currentLineLength += item.Length;
+        //            }
+        //        }
+        //        else
+        //        {
+        //            sb.Append("[ ]");
+        //        }
+
+        //        sb.AppendLine();
+        //    }
+
+        //    return sb.ToString().TrimEnd();
+        //}
     }
 }

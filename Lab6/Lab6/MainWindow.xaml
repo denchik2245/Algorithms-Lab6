@@ -1,12 +1,42 @@
 ﻿<Window x:Class="Lab6.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Lab6"
-        mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        Title="Лабораторная работа 6. Хэш-таблицы" Height="450" Width="800">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
 
+        <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,0,0,10">
+            <Label Content="Метод разрешения коллизий:" VerticalAlignment="Center"/>
+            <ComboBox x:Name="CollisionMethodComboBox" Width="200" Margin="5,0" SelectionChanged="CollisionMethodComboBox_SelectionChanged">
+                <ComboBoxItem Content="Метод цепочек"/>
+                <ComboBoxItem Content="Метод открытой адресации"/>
+            </ComboBox>
+            <Label Content="Метод хеширования:" VerticalAlignment="Center" Margin="10,0,0,0"/>
+            <ComboBox x:Name="HashingMethodComboBox" Width="200" Margin="5,0" SelectionChanged="HashingMethodComboBox_SelectionChanged"/>
+            <CheckBox x:Name="AutoGenerateCheckBox" Content="Генерировать автоматически" Margin="10,0,0,0" VerticalAlignment="Center"/>
+            <Button Content="Сгенерировать и заполнить" Width="175" Margin="10,0,0,0" Click="GenerateAndFillButton_Click"/>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Grid.Row="1" Margin="0,0,0,10">
+            <Label Content="Ключ:" VerticalAlignment="Center"/>
+            <TextBox x:Name="KeyTextBox" Width="100" Margin="5,0"/>
+            <Label Content="Значение:" VerticalAlignment="Center"/>
+            <TextBox x:Name="ValueTextBox" Width="200" Margin="5,0"/>
+            <Button Content="Добавить" Width="75" Margin="5,0" Click="AddButton_Click"/>
+            <Button Content="Удалить" Width="75" Margin="5,0" Click="RemoveButton_Click"/>
+            <Button Content="Найти" Width="75" Margin="5,0" Click="FindButton_Click"/>
+        </StackPanel>
+
+        <DataGrid x:Name="OutputDataGrid" Grid.Row="2" AutoGenerateColumns="False" IsReadOnly="True">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Ячейка" Binding="{Binding CellIndex}" Width="Auto"/>
+                <DataGridTextColumn Header="Ключ" Binding="{Binding Key}" Width="*"/>
+                <DataGridTextColumn Header="Значение" Binding="{Binding Value}" Width="*"/>
+            </DataGrid.Columns>
+        </DataGrid>
     </Grid>
 </Window>
