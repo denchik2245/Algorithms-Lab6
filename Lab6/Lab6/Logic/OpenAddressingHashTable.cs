@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Logic
+﻿namespace Lab6.Logic
 {
     public class OpenAddressingHashTable<TKey, TValue>
     {
@@ -20,10 +14,12 @@ namespace Logic
         private int size;
         private int count;
         private double loadFactor = 0.75;
+        private ProbeType probeType; // Добавлено поле для хранения метода пробирования
 
-        public OpenAddressingHashTable(int size)
+        public OpenAddressingHashTable(int size, ProbeType probeType)
         {
             this.size = size;
+            this.probeType = probeType;
             this.table = new Entry[size];
             this.count = 0;
         }
@@ -82,7 +78,7 @@ namespace Logic
             {
                 if (entry.IsOccupied && !entry.WasDeleted)
                 {
-                    Insert(entry.Key, entry.Value, ProbeType.Linear); // Переносим элементы в новую таблицу
+                    Insert(entry.Key, entry.Value); // Используем сохранённый probeType
                 }
             }
         }
@@ -111,7 +107,7 @@ namespace Logic
             return true;
         }
 
-        public void Insert(TKey key, TValue value, ProbeType probeType)
+        public void Insert(TKey key, TValue value)
         {
             if ((double)count / size >= loadFactor)
             {
@@ -124,7 +120,7 @@ namespace Logic
 
             while (true)
             {
-                index = GetProbeIndex(hash, key, i, probeType);
+                index = GetProbeIndex(hash, key, i);
 
                 if (!table[index].IsOccupied || table[index].WasDeleted)
                 {
@@ -149,7 +145,7 @@ namespace Logic
             }
         }
 
-        public bool Search(TKey key, ProbeType probeType, out TValue value)
+        public bool Search(TKey key, out TValue value)
         {
             int hash = Hash(key);
             int i = 0;
@@ -157,20 +153,7 @@ namespace Logic
 
             while (true)
             {
-                switch (probeType)
-                {
-                    case ProbeType.Linear:
-                        index = LinearProbeHashFunction(hash, i);
-                        break;
-                    case ProbeType.Quadratic:
-                        index = QuadraticProbeHashFunction(hash, i);
-                        break;
-                    case ProbeType.Double:
-                        index = DoubleHashHashFunction(key, i);
-                        break;
-                    default:
-                        throw new ArgumentException("Неверный тип исследования.");
-                }
+                index = GetProbeIndex(hash, key, i);
 
                 if (!table[index].IsOccupied)
                 {
@@ -192,7 +175,7 @@ namespace Logic
             }
         }
 
-        public bool Delete(TKey key, ProbeType probeType)
+        public bool Delete(TKey key)
         {
             int hash = Hash(key);
             int i = 0;
@@ -200,20 +183,7 @@ namespace Logic
 
             while (true)
             {
-                switch (probeType)
-                {
-                    case ProbeType.Linear:
-                        index = LinearProbeHashFunction(hash, i);
-                        break;
-                    case ProbeType.Quadratic:
-                        index = QuadraticProbeHashFunction(hash, i);
-                        break;
-                    case ProbeType.Double:
-                        index = DoubleHashHashFunction(key, i);
-                        break;
-                    default:
-                        throw new ArgumentException("Неверный тип исследования.");
-                }
+                index = GetProbeIndex(hash, key, i);
 
                 if (!table[index].IsOccupied)
                 {
@@ -234,7 +204,7 @@ namespace Logic
             }
         }
 
-        private int GetProbeIndex(int hash, TKey key, int i, ProbeType probeType)
+        private int GetProbeIndex(int hash, TKey key, int i)
         {
             return probeType switch
             {
@@ -256,4 +226,5 @@ namespace Logic
             Step
         }
     }
+
 }
