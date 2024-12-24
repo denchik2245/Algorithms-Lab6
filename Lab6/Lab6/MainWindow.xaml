@@ -17,7 +17,7 @@
             </ComboBox>
             <Label Content="Метод хеширования:" VerticalAlignment="Center" Margin="10,0,0,0"/>
             <ComboBox x:Name="HashingMethodComboBox" Width="200" Margin="5,0" SelectionChanged="HashingMethodComboBox_SelectionChanged"/>
-            <CheckBox x:Name="AutoGenerateCheckBox" Content="Генерировать автоматически" Margin="10,0,0,0" VerticalAlignment="Center"/>
+            <CheckBox x:Name="AutoGenerateCheckBox" Content="Генерировать при смене метода" Margin="10,0,0,0" VerticalAlignment="Center"/>
             <Button Content="Сгенерировать и заполнить" Width="175" Margin="10,0,0,0" Click="GenerateAndFillButton_Click"/>
         </StackPanel>
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Logic;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -25,7 +26,7 @@ namespace Logic
         /// Метод вычисления хэша путем деления.
         public static int DivisionHashFunction<T>(T key, int tableSize)
         {
-            int keyValue = Convert.ToInt32(key); // Преобразуем ключ в целое число
+            int keyValue = key is int ? (int)(object)key : key.GetHashCode(); // Преобразуем ключ в целое число или используем GetHashCode
             return Math.Abs(keyValue % tableSize); // Вычисляем индекс как остаток от деления
         }
 
@@ -33,7 +34,7 @@ namespace Logic
         public static int MultiplicationHashFunction<T>(T key, int tableSize)
         {
             double A = 0.6180339887; // Константа для умножения
-            int keyValue = Convert.ToInt32(key); // Преобразуем ключ в целое число
+            int keyValue = key is int ? (int)(object)key : key.GetHashCode(); // Преобразуем ключ в целое число или используем GetHashCode
             double fraction = (keyValue * A) % 1; // Вычисляем дробную часть
             return (int)(tableSize * fraction); // Вычисляем индекс
         }
@@ -47,13 +48,13 @@ namespace Logic
 
             byte[] data;
 
-            if (typeof(T) == typeof(int))
+            if (key is int)
             {
-                data = BitConverter.GetBytes(Convert.ToInt32(key)); // Преобразование T в int, затем в byte[]
+                data = BitConverter.GetBytes((int)(object)key); // Преобразование T в int, затем в byte[]
             }
-            else if (typeof(T) == typeof(string))
+            else if (key is string)
             {
-                data = System.Text.Encoding.UTF8.GetBytes(key as string);
+                data = Encoding.UTF8.GetBytes(key as string);
             }
             else
             {
@@ -68,16 +69,6 @@ namespace Logic
             }
 
             return (int)(hash % tableSize);
-        }
-
-
-        private static byte[] GetBytes<T>(T key)
-        {
-            // Преобразуем ключ в строку
-            string keyString = key.ToString();
-
-            // Преобразуем строку в байтовый массив
-            return Encoding.UTF8.GetBytes(keyString);
         }
 
         /// Добавить пару ключ-значение в хэш-таблицу.
@@ -136,51 +127,51 @@ namespace Logic
 
             throw new KeyNotFoundException($"Key '{key}' not found.");
         }
+    
+    /// Получить строковое представление всех элементов хэш-таблицы.
+    //public string Display()
+    //{
+    //    var sb = new StringBuilder();
+    //    int lineWidth = 120; // Максимальная длина строки
 
-        /// Получить строковое представление всех элементов хэш-таблицы.
-        //public string Display()
-        //{
-        //    var sb = new StringBuilder();
-        //    int lineWidth = 120; // Максимальная длина строки
+    //    for (int i = 0; i < tableSize; i++)
+    //    {
+    //        int maxKeyLength = table[i].Any() ? table[i].Max(p => p.Key.ToString().Length) : 0;
+    //        int maxValueLength = table[i].Any() ? table[i].Max(p => p.Value.ToString().Length) : 0;
 
-        //    for (int i = 0; i < tableSize; i++)
-        //    {
-        //        int maxKeyLength = table[i].Any() ? table[i].Max(p => p.Key.ToString().Length) : 0;
-        //        int maxValueLength = table[i].Any() ? table[i].Max(p => p.Value.ToString().Length) : 0;
+    //        sb.Append(string.Format("Ячейка {0,3}: ", i));
 
-        //        sb.Append(string.Format("Ячейка {0,3}: ", i));
+    //        if (table[i].Any())
+    //        {
+    //            int currentLineLength = sb.Length; // Текущая длина строки
+    //            foreach (var pair in table[i])
+    //            {
+    //                string item = string.Format("[{0,-" + maxKeyLength + "} | {1,-" + maxValueLength + "}]", pair.Key, pair.Value);
+    //                if (currentLineLength + item.Length + 2 > lineWidth) // +2 для ", "
+    //                {
+    //                    sb.AppendLine();
+    //                    sb.Append("          "); // Отступ для продолжения строки
+    //                    currentLineLength = 10; // Длина отступа
+    //                }
+    //                else if (currentLineLength > 10) // Добавляем запятую только если это не первый элемент в строке
+    //                {
+    //                    sb.Append(", ");
+    //                    currentLineLength += 2;
+    //                }
 
-        //        if (table[i].Any())
-        //        {
-        //            int currentLineLength = sb.Length; // Текущая длина строки
-        //            foreach (var pair in table[i])
-        //            {
-        //                string item = string.Format("[{0,-" + maxKeyLength + "} | {1,-" + maxValueLength + "}]", pair.Key, pair.Value);
-        //                if (currentLineLength + item.Length + 2 > lineWidth) // +2 для ", "
-        //                {
-        //                    sb.AppendLine();
-        //                    sb.Append("          "); // Отступ для продолжения строки
-        //                    currentLineLength = 10; // Длина отступа
-        //                }
-        //                else if (currentLineLength > 10) // Добавляем запятую только если это не первый элемент в строке
-        //                {
-        //                    sb.Append(", ");
-        //                    currentLineLength += 2;
-        //                }
+    //                sb.Append(item);
+    //                currentLineLength += item.Length;
+    //            }
+    //        }
+    //        else
+    //        {
+    //            sb.Append("[ ]");
+    //        }
 
-        //                sb.Append(item);
-        //                currentLineLength += item.Length;
-        //            }
-        //        }
-        //        else
-        //        {
-        //            sb.Append("[ ]");
-        //        }
+    //        sb.AppendLine();
+    //    }
 
-        //        sb.AppendLine();
-        //    }
-
-        //    return sb.ToString().TrimEnd();
-        //}
-    }
+    //    return sb.ToString().TrimEnd();
+    //}
+}
 }

@@ -20,8 +20,12 @@ namespace Lab6
 {
     public partial class MainWindow : Window
     {
+
         private SeparateChainingHashTable<int, string> currentHashTable;
         private int tableSize = 1000;
+
+        private OpenAddressingHashTable<int, string> openAddressingHashTable;
+        private OpenAddressingHashTable<int, string>.ProbeType currentProbeType;
 
         public MainWindow()
         {
@@ -85,7 +89,7 @@ namespace Lab6
 
         private void UpdateCurrentHashTable()
         {
-            if (CollisionMethodComboBox.SelectedIndex == 0)
+            if (CollisionMethodComboBox.SelectedIndex == 0) // Метод цепочек
             {
                 Func<int, int> hashFunction = null;
 
@@ -106,15 +110,34 @@ namespace Lab6
                 {
                     currentHashTable = new SeparateChainingHashTable<int, string>(tableSize, hashFunction);
                 }
+
+                openAddressingHashTable = null; // Очищаем вторую таблицу
             }
-            else if (CollisionMethodComboBox.SelectedIndex == 1)
+            else if (CollisionMethodComboBox.SelectedIndex == 1) // Открытая адресация
             {
-                MessageBox.Show("Методы открытой адресации пока не реализованы.");
-                currentHashTable = null;
+                switch (HashingMethodComboBox.SelectedIndex)
+                {
+                    case 0:
+                        currentProbeType = OpenAddressingHashTable<int, string>.ProbeType.Linear;
+                        break;
+                    case 1:
+                        currentProbeType = OpenAddressingHashTable<int, string>.ProbeType.Quadratic;
+                        break;
+                    case 2:
+                        currentProbeType = OpenAddressingHashTable<int, string>.ProbeType.Double;
+                        break;
+                    case 3:
+                        currentProbeType = OpenAddressingHashTable<int, string>.ProbeType.Step; // Собственный метод
+                        break;
+                }
+
+                openAddressingHashTable = new OpenAddressingHashTable<int, string>(tableSize);
+                currentHashTable = null; // Очищаем первую таблицу
             }
 
             UpdateOutput();
         }
+
 
         private void GenerateAndFillButton_Click(object sender, RoutedEventArgs e)
         {
@@ -124,45 +147,61 @@ namespace Lab6
 
         private void GenerateAndFillTable()
         {
-            if (currentHashTable == null)
+            if (currentHashTable == null && openAddressingHashTable == null)
             {
                 MessageBox.Show("Выберите метод хеширования.");
                 return;
             }
 
             var random = new Random();
-            for (int i = 0; i < 100000; i++)
+            for (int i = 0; i < 1000; i++)
             {
-                int key = random.Next(0, tableSize * 10); // Уменьшенный диапазон
+                int key = random.Next(0, tableSize * 100);
                 string value = $"Value_{i}";
 
                 try
                 {
-                    currentHashTable.Add(key, value);
+                    if (currentHashTable != null) // Метод цепочек
+                    {
+                        currentHashTable.Add(key, value);
+                    }
+                    else if (openAddressingHashTable != null) // Открытая адресация
+                    {
+                        openAddressingHashTable.Insert(key, value, currentProbeType);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    // Логируем ошибки, чтобы понять проблему
-                    Console.WriteLine($"Ошибка при добавлении ключа {key}: {ex.Message}");
+                    MessageBox.Show($"Ошибка при добавлении ключа {key}: {ex.Message}");
                 }
             }
 
             UpdateOutput();
-            MessageBox.Show("Хэш-таблица заполнена 100,000 элементами.");
+            MessageBox.Show("Хэш-таблица заполнена 1000 элементами.");
         }
+
 
         private void AddButton_Click(object sender, RoutedEventArgs e)
         {
-            if (currentHashTable == null)
-            {
-                MessageBox.Show("Выберите метод хеширования.");
-                return;
-            }
-
             if (int.TryParse(KeyTextBox.Text, out int key) && !string.IsNullOrEmpty(ValueTextBox.Text))
             {
-                currentHashTable.Add(key, ValueTextBox.Text);
-                UpdateOutput();
+                try
+                {
+                    if (currentHashTable != null) // Метод цепочек
+                    {
+                        currentHashTable.Add(key, ValueTextBox.Text);
+                    }
+                    else if (openAddressingHashTable != null) // Открытая адресация
+                    {
+                        openAddressingHashTable.Insert(key, ValueTextBox.Text, currentProbeType);
+                    }
+
+                    UpdateOutput();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Ошибка при добавлении ключа {key}: {ex.Message}");
+                }
             }
             else
             {
@@ -170,19 +209,25 @@ namespace Lab6
             }
         }
 
+
         private void RemoveButton_Click(object sender, RoutedEventArgs e)
         {
-            if (currentHashTable == null)
-            {
-                MessageBox.Show("Выберите метод хеширования.");
-                return;
-            }
-
             if (int.TryParse(KeyTextBox.Text, out int key))
             {
                 try
                 {
-                    currentHashTable.Remove(key);
+                    if (currentHashTable != null) // Метод цепочек
+                    {
+                        currentHashTable.Remove(key);
+                    }
+                    else if (openAddressingHashTable != null) // Открытая адресация
+                    {
+                        if (!openAddressingHashTable.Delete(key, currentProbeType))
+                        {
+                            throw new KeyNotFoundException();
+                        }
+                    }
+
                     UpdateOutput();
                 }
                 catch (KeyNotFoundException)
@@ -196,19 +241,27 @@ namespace Lab6
             }
         }
 
+
         private void FindButton_Click(object sender, RoutedEventArgs e)
         {
-            if (currentHashTable == null)
-            {
-                MessageBox.Show("Выберите метод хеширования.");
-                return;
-            }
-
             if (int.TryParse(KeyTextBox.Text, out int key))
             {
                 try
                 {
-                    string value = currentHashTable.Get(key);
+                    string value = null;
+
+                    if (currentHashTable != null) // Метод цепочек
+                    {
+                        value = currentHashTable.Get(key);
+                    }
+                    else if (openAddressingHashTable != null) // Открытая адресация
+                    {
+                        if (!openAddressingHashTable.Search(key, currentProbeType, out value))
+                        {
+                            throw new KeyNotFoundException();
+                        }
+                    }
+
                     MessageBox.Show($"Ключ: {key}, Значение: {value}");
                 }
                 catch (KeyNotFoundException)
@@ -222,6 +275,7 @@ namespace Lab6
             }
         }
 
+
         // Класс для представления данных в DataGrid
         public class HashTableItem
         {
@@ -232,10 +286,10 @@ namespace Lab6
 
         private void UpdateOutput()
         {
-            if (currentHashTable != null)
-            {
-                ObservableCollection<HashTableItem> items = new ObservableCollection<HashTableItem>();
+            ObservableCollection<HashTableItem> items = new ObservableCollection<HashTableItem>();
 
+            if (currentHashTable != null) // Метод цепочек
+            {
                 for (int i = 0; i < tableSize; i++)
                 {
                     if (currentHashTable.table[i] != null)
@@ -250,12 +304,25 @@ namespace Lab6
                         items.Add(new HashTableItem { CellIndex = i, Key = "", Value = "пусто" });
                     }
                 }
-                OutputDataGrid.ItemsSource = items;
             }
-            else
+            else if (openAddressingHashTable != null) // Открытая адресация
             {
-                OutputDataGrid.ItemsSource = null; // Очищаем DataGrid
+                for (int i = 0; i < tableSize; i++)
+                {
+                    var entry = openAddressingHashTable.table[i];
+                    if (entry.IsOccupied && !entry.WasDeleted)
+                    {
+                        items.Add(new HashTableItem { CellIndex = i, Key = entry.Key.ToString(), Value = entry.Value });
+                    }
+                    else
+                    {
+                        items.Add(new HashTableItem { CellIndex = i, Key = "", Value = "пусто" });
+                    }
+                }
             }
+
+            OutputDataGrid.ItemsSource = items;
         }
+
     }
 }
